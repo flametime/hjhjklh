@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
+<head>
+	<meta charset='utf-8' />
+	<meta name='viewport' content='width=device-width, user-scalable=no' />
+	<title>Nfterrium</title>
+	<style type='text/css'>
+
+		body {
+			touch-action: none;
+			margin: 0;
+			border: 0 none;
+			padding: 0;
+			text-align: center;
+			background-color: black;
+		}
+
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+
+		#canvas:focus {
+			outline: none;
+		}
+
+		.godot {
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			color: #e0e0e0;
+			background-color: #3b3943;
+			background-image: linear-gradient(to bottom, #403e48, #35333c);
+			border: 1px solid #45434e;
+			box-shadow: 0 0 1px 1px #2f2d35;
+		}
+
+
+		/* Status display
+		 * ============== */
+
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/* don't consume click events - make children visible explicitly */
+			visibility: hidden;
+		}
+
+		#status-progress {
+			width: 366px;
+			height: 7px;
+			background-color: #38363A;
+			border: 1px solid #444246;
+			padding: 1px;
+			box-shadow: 0 0 2px 1px #1B1C22;
+			border-radius: 2px;
+			visibility: visible;
+		}
+
+		@media only screen and (orientation:portrait) {
+			#status-progress {
+				width: 61.8%;
+			}
+		}
+
+		#status-progress-inner {
+			height: 100%;
+			width: 0;
+			box-sizing: border-box;
+			transition: width 0.5s linear;
+			background-color: #202020;
+			border: 1px solid #222223;
+			box-shadow: 0 0 1px 1px #27282E;
+			border-radius: 3px;
+		}
+
+		#status-indeterminate {
+			height: 42px;
+			visibility: visible;
+			position: relative;
+		}
+
+		#status-indeterminate > div {
+			width: 4.5px;
+			height: 0;
+			border-style: solid;
+			border-width: 9px 3px 0 3px;
+			border-color: #2b2b2b transparent transparent transparent;
+			transform-origin: center 21px;
+			position: absolute;
+		}
+
+		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
+		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
+		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
+		#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
+		#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
+		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
+		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
+		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
+
+		#status-notice {
+			margin: 0 100px;
+			line-height: 1.3;
+			visibility: visible;
+			padding: 4px 6px;
+			visibility: visible;
+		}
+	</style>
+<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
+<link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
+<script>
+const eventId_camera = 1;
+const eventId_loadMainNomadModeByLinkId = 2;
+const eventId_initializeLocalBattleNomad = 10;
+const eventId_initializeEnemyBattleNomad = 20;
+const eventId_loadLocalBattleNomadModelByLink = 11;
+const eventId_loadEnemyBattleNomadModelByLink = 21;
+//------Battle Player------//
+const eventId_playFullBattleByLink = 40;
+const eventId_playFullBattleByJson = 41;
+const eventId_playLastRoundByLink = 42;
+const eventId_playLastRoundByJson = 43;
+//------Battle Artefacts------//
+const eventId_loadLocalAtrefact_1_ByLink = 71;
+const eventId_loadLocalAtrefact_2_ByLink = 72;
+const eventId_loadLocalAtrefact_3_ByLink = 73;
+const eventId_loadLocalAtrefact_4_ByLink = 74;
+const eventId_loadLocalAtrefact_5_ByLink = 75;
+const eventId_loadLocalAtrefact_6_ByLink = 76;
+
+const eventId_loadEnemyAtrefact_1_ByLink = 81;
+const eventId_loadEnemyAtrefact_2_ByLink = 82;
+const eventId_loadEnemyAtrefact_3_ByLink = 83;
+const eventId_loadEnemyAtrefact_4_ByLink = 84;
+const eventId_loadEnemyAtrefact_5_ByLink = 85;
+const eventId_loadEnemyAtrefact_6_ByLink = 86;
+
+class bridgeMessage 
+{
+  constructor(eventType, eventData) 
+  {
+    this.eventType = eventType;
+    this.eventData = eventData;
+  }
+}
+
+function focusCameraOn(type)
+{
+  var message = new bridgeMessage(eventId_camera, type);
+  InvokeGodot(JSON.stringify(message));
+}
+
+function loadMainNomadModeByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadMainNomadModeByLinkId, link);
+  InvokeGodot(JSON.stringify(message));
+}
+
+function initializeLocalBattleNomadId(id)
+{
+  var message = new bridgeMessage(eventId_initializeLocalBattleNomad, id);
+  InvokeGodot(JSON.stringify(message));
+}
+
+function loadLocalBattleNomadModelByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadLocalBattleNomadModelByLink, link);
+  InvokeGodot(JSON.stringify(message));
+}
+
+function initializeEnemyBattleNomadId(id)
+{
+  var message = new bridgeMessage(eventId_initializeEnemyBattleNomad, id);
+  InvokeGodot(JSON.stringify(message));
+}
+
+function loadEnemyBattleNomadModelByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadEnemyBattleNomadModelByLink, link);
+  InvokeGodot(JSON.stringify(message));
+}
+
+function playFullBattleByLink(link)
+{
+  var message = new bridgeMessage(eventId_playFullBattleByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+
+function playFullBattleByJson(link)
+{
+  var message = new bridgeMessage(eventId_playFullBattleByJson, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+
+function playLastRoundByLink(link)
+{
+  var message = new bridgeMessage(eventId_playLastRoundByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+
+function playLastRoundByJson(link)
+{
+  var message = new bridgeMessage(eventId_playLastRoundByJson, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+
+///------Local artefacts--------///
+//To unload artefact from slot - loadLocalAtrefact_1_ByLink("") - empty string
+function loadLocalAtrefact_1_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadLocalAtrefact_1_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadLocalAtrefact_2_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadLocalAtrefact_2_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadLocalAtrefact_3_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadLocalAtrefact_3_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadLocalAtrefact_4_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadLocalAtrefact_4_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadLocalAtrefact_5_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadLocalAtrefact_5_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadLocalAtrefact_6_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadLocalAtrefact_6_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+///--------------///
+
+///------Enemy artefacts--------///
+//To unload artefact from slot - loadLocalAtrefact_1_ByLink("") - empty string
+function loadEnemyAtrefact_1_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadEnemyAtrefact_1_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadEnemyAtrefact_2_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadEnemyAtrefact_2_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadEnemyAtrefact_3_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadEnemyAtrefact_3_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadEnemyAtrefact_4_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadEnemyAtrefact_4_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadEnemyAtrefact_5_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadEnemyAtrefact_5_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+function loadEnemyAtrefact_6_ByLink(link)
+{
+  var message = new bridgeMessage(eventId_loadEnemyAtrefact_6_ByLink, link);
+  InvokeGodot(JSON.stringify(message));
+} 
+///--------------///
+
+function InvokeGodot(args) {
+	     Test(args);
+    }
+
+
+function Test(callback) {
+    callback(callback);
+}
+</script>
+</head>
+<body>
+	<canvas id='canvas'>
+		HTML5 canvas appears to be unsupported in the current browser.<br />
+		Please try updating or use a different browser.
+	</canvas>
+	<div id='status'>
+		<div id='status-progress' style='display: none;' oncontextmenu='event.preventDefault();'><div id ='status-progress-inner'></div></div>
+		<div id='status-indeterminate' style='display: none;' oncontextmenu='event.preventDefault();'>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+		<div id='status-notice' class='godot' style='display: none;'></div>
+	</div>
+
+	<script type='text/javascript' src='index.js'></script>
+	<script type='text/javascript'>//<![CDATA[
+
+		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":238327472,"index.wasm":18790437},"focusCanvas":true,"gdnativeLibs":[]};
+		var engine = new Engine(GODOT_CONFIG);
+
+		(function() {
+			const INDETERMINATE_STATUS_STEP_MS = 100;
+			var statusProgress = document.getElementById('status-progress');
+			var statusProgressInner = document.getElementById('status-progress-inner');
+			var statusIndeterminate = document.getElementById('status-indeterminate');
+			var statusNotice = document.getElementById('status-notice');
+
+			var initializing = true;
+			var statusMode = 'hidden';
+
+			var animationCallbacks = [];
+			function animate(time) {
+				animationCallbacks.forEach(callback => callback(time));
+				requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
+
+			function setStatusMode(mode) {
+
+				if (statusMode === mode || !initializing)
+					return;
+				[statusProgress, statusIndeterminate, statusNotice].forEach(elem => {
+					elem.style.display = 'none';
+				});
+				animationCallbacks = animationCallbacks.filter(function(value) {
+					return (value != animateStatusIndeterminate);
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						animationCallbacks.push(animateStatusIndeterminate);
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					case 'hidden':
+						break;
+					default:
+						throw new Error('Invalid status mode');
+				}
+				statusMode = mode;
+			}
+
+			function animateStatusIndeterminate(ms) {
+				var i = Math.floor(ms / INDETERMINATE_STATUS_STEP_MS % 8);
+				if (statusIndeterminate.children[i].style.borderTopColor == '') {
+					Array.prototype.slice.call(statusIndeterminate.children).forEach(child => {
+						child.style.borderTopColor = '';
+					});
+					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+				}
+			}
+
+			function setStatusNotice(text) {
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				var lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			};
+
+			function displayFailureNotice(err) {
+				var msg = err.message || err;
+				console.error(msg);
+				setStatusNotice(msg);
+				setStatusMode('notice');
+				initializing = false;
+			};
+
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice('WebGL not available');
+			} else {
+				setStatusMode('indeterminate');
+				engine.startGame({
+					'onProgress': function (current, total) {
+						if (total > 0) {
+							statusProgressInner.style.width = current/total * 100 + '%';
+							setStatusMode('progress');
+							if (current === total) {
+								// wait for progress bar animation
+								setTimeout(() => {
+									setStatusMode('indeterminate');
+								}, 500);
+							}
+						} else {
+							setStatusMode('indeterminate');
+						}
+					},
+				}).then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+				}, displayFailureNotice);
+			}
+		})();
+	//]]></script>
+</body>
+</html>
+
